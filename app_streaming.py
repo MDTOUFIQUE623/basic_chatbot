@@ -1,6 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 import os
+import time
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -57,12 +58,14 @@ def main():
             message_placeholder = st.empty()
             full_response = ""
             
-            for chunk in get_gemini_response_stream(prompt):
-                full_response += chunk
-                message_placeholder.markdown(full_response + "▌")
+            # Use write_stream for smoother streaming
+            def response_generator():
+                for chunk in get_gemini_response_stream(prompt):
+                    yield chunk
+                    time.sleep(0.01)  # Small delay for smoother animation
             
-            # Remove cursor and show final response
-            message_placeholder.markdown(full_response)
+            # Stream the response
+            full_response = st.write_stream(response_generator)
         
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": full_response})
