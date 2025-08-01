@@ -55,12 +55,17 @@ def main():
         
         # Display assistant response with streaming
         with st.chat_message("assistant"):
-            message_placeholder = st.empty()
-            full_response = ""
+            # Show thinking indicator while waiting for first token
+            thinking_placeholder = st.empty()
+            thinking_placeholder.markdown("Thinking...")
             
             # Use write_stream for smoother streaming
             def response_generator():
+                first_chunk = True
                 for chunk in get_gemini_response_stream(prompt):
+                    if first_chunk:
+                        thinking_placeholder.empty()  # Remove thinking indicator
+                        first_chunk = False
                     yield chunk
                     time.sleep(0.01)  # Small delay for smoother animation
             
